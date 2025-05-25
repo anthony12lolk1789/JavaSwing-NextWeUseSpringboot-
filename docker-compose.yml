@@ -10,6 +10,13 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./db:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpass" ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - EmilyApp
     restart: always
 
   app:
@@ -23,9 +30,15 @@ services:
       DISPLAY: host.docker.internal:0.0
     volumes:
       - ./src/Recursos:/app/Recursos
+    networks:
+      - EmilyApp
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     
 
 volumes:
   mysql-data:
+networks:
+  EmilyApp:
+    driver: bridge
